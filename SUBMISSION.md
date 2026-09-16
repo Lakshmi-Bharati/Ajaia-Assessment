@@ -23,6 +23,7 @@
 
 ## 🌐 Live Deployment & Repository Links
 
+- **GitHub Repository URL**: [https://github.com/Lakshmi-Bharati/Ajaia-Assessment](https://github.com/Lakshmi-Bharati/Ajaia-Assessment)
 - **Live Product URL**: `[PASTE YOUR DEPLOYED URL HERE e.g. https://ajaia-docs.vercel.app]`
   *(If running locally for review, follow the local instructions below; it launches in under 15 seconds).*
 - **Walkthrough Video**: `[PASTE YOUR LOOM / DRIVE / YOUTUBE URL HERE]`
