@@ -14,8 +14,46 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const downloadId = searchParams.get("downloadId");
+
+    if (downloadId) {
+      const att = await prisma.attachment.findUnique({
+        where: { id: downloadId },
+      });
+      if (!att || att.documentId !== id) {
+        return NextResponse.json({ error: "Attachment not found" }, { status: 404 });
+      }
+
+      if (att.filePath.startsWith("data:")) {
+        const parts = att.filePath.split(",");
+        const meta = parts[0];
+        const base64Data = parts[1] || "";
+        const mime = meta.split(";")[0].replace("data:", "") || att.mimeType;
+        const fileBuffer = Buffer.from(base64Data, "base64");
+
+        return new NextResponse(fileBuffer, {
+          headers: {
+            "Content-Type": mime,
+            "Content-Disposition": `attachment; filename="${encodeURIComponent(att.filename)}"`,
+            "Content-Length": String(fileBuffer.length),
+          },
+        });
+      }
+
+      return NextResponse.redirect(new URL(att.filePath, req.url));
+    }
+
     const attachments = await prisma.attachment.findMany({
       where: { documentId: id },
+      select: {
+        id: true,
+        documentId: true,
+        filename: true,
+        fileSize: true,
+        mimeType: true,
+        createdAt: true,
+      },
       orderBy: { createdAt: "desc" },
     });
 

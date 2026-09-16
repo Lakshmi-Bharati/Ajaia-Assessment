@@ -373,3 +373,12 @@
   font-size: 14px;
   margin-bottom: 20px;
 }
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}

@@ -12,14 +12,23 @@ import {
   Layers,
   Sparkles,
 } from "lucide-react";
-import { UserSwitcher, UserPersona } from "@/components/UserSwitcher/UserSwitcher";
+import { UserSwitcher, UserPersona, DEFAULT_PERSONAS } from "@/components/UserSwitcher/UserSwitcher";
 import { DocumentCard, DocumentItem } from "@/components/Dashboard/DocumentCard";
 import { ImportModal } from "@/components/Dashboard/ImportModal";
 import "@/styles/dashboard.css";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<UserPersona | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserPersona>(() => {
+    if (typeof document !== "undefined") {
+      const match = document.cookie.match(/ajaia_user_id=([^;]+)/);
+      if (match) {
+        const found = DEFAULT_PERSONAS.find((u) => u.id === match[1]);
+        if (found) return found;
+      }
+    }
+    return DEFAULT_PERSONAS[0];
+  });
   const [ownedDocs, setOwnedDocs] = useState<DocumentItem[]>([]);
   const [sharedDocs, setSharedDocs] = useState<DocumentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,14 +38,24 @@ export default function DashboardPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   const fetchDocuments = async () => {
-    setIsLoading(true);
     try {
       const res = await fetch("/api/documents");
       const data = await res.json();
       if (res.ok) {
-        setCurrentUser(data.currentUser);
+        if (data.currentUser) setCurrentUser(data.currentUser);
         setOwnedDocs(data.ownedDocuments || []);
         setSharedDocs(data.sharedDocuments || []);
+        try {
+          sessionStorage.setItem(
+            "ajaia_cached_docs",
+            JSON.stringify({
+              owned: data.ownedDocuments || [],
+              shared: data.sharedDocuments || [],
+            })
+          );
+        } catch {
+          // ignore session storage write errors
+        }
       }
     } catch (err) {
       console.error("Failed to fetch documents", err);
@@ -46,6 +65,20 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    // Hydrate immediately from cache for instant 0ms perception
+    try {
+      const cached = sessionStorage.getItem("ajaia_cached_docs");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.owned || parsed.shared) {
+          setOwnedDocs(parsed.owned || []);
+          setSharedDocs(parsed.shared || []);
+          setIsLoading(false);
+        }
+      }
+    } catch {
+      // ignore
+    }
     fetchDocuments();
   }, []);
 
@@ -203,20 +236,80 @@ export default function DashboardPage() {
       </div>
 
       {/* Documents Grid */}
-      {isLoading ? (
-        <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-secondary)" }}>
-          <div
-            style={{
-              width: 36,
-              height: 36,
-              border: "3px solid rgba(99, 102, 241, 0.2)",
-              borderTopColor: "var(--accent-primary)",
-              borderRadius: "50%",
-              animation: "spin 0.8s linear infinite",
-              margin: "0 auto 16px",
-            }}
-          />
-          <p>Loading documents...</p>
+      {isLoading && displayedDocuments.length === 0 ? (
+        <div className="documents-grid">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="document-card"
+              style={{
+                height: 190,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                padding: "20px",
+                background: "rgba(255, 255, 255, 0.02)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "var(--radius-lg)",
+                animation: "pulse 1.6s ease-in-out infinite",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    height: 18,
+                    width: "65%",
+                    background: "rgba(255, 255, 255, 0.07)",
+                    borderRadius: 4,
+                    marginBottom: 14,
+                  }}
+                />
+                <div
+                  style={{
+                    height: 12,
+                    width: "92%",
+                    background: "rgba(255, 255, 255, 0.04)",
+                    borderRadius: 4,
+                    marginBottom: 8,
+                  }}
+                />
+                <div
+                  style={{
+                    height: 12,
+                    width: "78%",
+                    background: "rgba(255, 255, 255, 0.04)",
+                    borderRadius: 4,
+                  }}
+                />
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingTop: 12,
+                  borderTop: "1px solid rgba(255, 255, 255, 0.04)",
+                }}
+              >
+                <div
+                  style={{
+                    height: 24,
+                    width: 24,
+                    borderRadius: "50%",
+                    background: "rgba(255, 255, 255, 0.08)",
+                  }}
+                />
+                <div
+                  style={{
+                    height: 12,
+                    width: 60,
+                    borderRadius: 4,
+                    background: "rgba(255, 255, 255, 0.04)",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       ) : displayedDocuments.length > 0 ? (
         <div className="documents-grid">

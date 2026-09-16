@@ -8,7 +8,7 @@ export interface AttachmentItem {
   filename: string;
   fileSize: number;
   mimeType: string;
-  filePath: string;
+  filePath?: string;
   createdAt: string;
 }
 
@@ -226,7 +226,7 @@ export const AttachmentPanel: React.FC<AttachmentPanelProps> = ({
 
               <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8 }}>
                 <a
-                  href={att.filePath}
+                  href={att.filePath || `/api/documents/${documentId}/attachments?downloadId=${att.id}`}
                   download={att.filename}
                   className="btn btn-secondary"
                   style={{ padding: "6px 8px" }}

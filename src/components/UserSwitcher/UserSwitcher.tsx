@@ -11,6 +11,30 @@ export interface UserPersona {
   roleTitle: string;
 }
 
+export const DEFAULT_PERSONAS: UserPersona[] = [
+  {
+    id: "user_alice",
+    name: "Alice Chen",
+    email: "alice@ajaia.ai",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alice",
+    roleTitle: "Product Lead",
+  },
+  {
+    id: "user_bob",
+    name: "Bob Martinez",
+    email: "bob@ajaia.ai",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Bob",
+    roleTitle: "Senior AI Engineer",
+  },
+  {
+    id: "user_charlie",
+    name: "Charlie Davis",
+    email: "charlie@ajaia.ai",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Charlie",
+    roleTitle: "Client Partner",
+  },
+];
+
 interface UserSwitcherProps {
   currentUser?: UserPersona | null;
   onUserChange?: (user: UserPersona) => void;
@@ -20,8 +44,18 @@ export const UserSwitcher: React.FC<UserSwitcherProps> = ({
   currentUser,
   onUserChange,
 }) => {
-  const [users, setUsers] = useState<UserPersona[]>([]);
-  const [activeUser, setActiveUser] = useState<UserPersona | null>(currentUser || null);
+  const [users, setUsers] = useState<UserPersona[]>(DEFAULT_PERSONAS);
+  const [activeUser, setActiveUser] = useState<UserPersona>(() => {
+    if (currentUser) return currentUser;
+    if (typeof document !== "undefined") {
+      const match = document.cookie.match(/ajaia_user_id=([^;]+)/);
+      if (match) {
+        const found = DEFAULT_PERSONAS.find((u) => u.id === match[1]);
+        if (found) return found;
+      }
+    }
+    return DEFAULT_PERSONAS[0];
+  });
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {

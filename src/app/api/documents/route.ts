@@ -16,10 +16,16 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch owned documents
+    // Fetch owned documents - optimized projection (exclude contentJson)
     const ownedDocuments = await prisma.document.findMany({
       where: { ownerId: user.id },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        contentHtml: true,
+        ownerId: true,
+        createdAt: true,
+        updatedAt: true,
         owner: { select: { id: true, name: true, email: true, avatar: true } },
         shares: {
           include: {
@@ -31,12 +37,18 @@ export async function GET(req: NextRequest) {
       orderBy: { updatedAt: "desc" },
     });
 
-    // Fetch documents shared with this user
+    // Fetch documents shared with this user - optimized projection
     const sharedRecords = await prisma.documentShare.findMany({
       where: { userId: user.id },
       include: {
         document: {
-          include: {
+          select: {
+            id: true,
+            title: true,
+            contentHtml: true,
+            ownerId: true,
+            createdAt: true,
+            updatedAt: true,
             owner: { select: { id: true, name: true, email: true, avatar: true } },
             shares: {
               include: {

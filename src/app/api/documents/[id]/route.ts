@@ -31,6 +31,14 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
           },
         },
         attachments: {
+          select: {
+            id: true,
+            documentId: true,
+            filename: true,
+            fileSize: true,
+            mimeType: true,
+            createdAt: true,
+          },
           orderBy: { createdAt: "desc" },
         },
       },
