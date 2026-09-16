@@ -24,7 +24,7 @@
 ## 🌐 Live Deployment & Repository Links
 
 - **GitHub Repository URL**: [https://github.com/Lakshmi-Bharati/Ajaia-Assessment](https://github.com/Lakshmi-Bharati/Ajaia-Assessment)
-- **Live Product URL**: `[UPDATING VIA VERCEL]`
+- **Live Product URL**: [https://ajaia-assessment-iblu.vercel.app/](https://ajaia-assessment-iblu.vercel.app/)
 - **Walkthrough Video**: [https://drive.google.com/file/d/1F7vcRSxkFmLqXeZn-A9ry3halq-VzL_M/view?usp=sharing](https://drive.google.com/file/d/1F7vcRSxkFmLqXeZn-A9ry3halq-VzL_M/view?usp=sharing)
 
 ---
