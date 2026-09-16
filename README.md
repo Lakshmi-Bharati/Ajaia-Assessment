@@ -73,8 +73,8 @@ Built for the **Ajaia AI-Native Full Stack Developer** technical assessment.
 
 ### 1. Installation
 ```bash
-git clone <repo-url>
-cd "Ajaia assessment"
+git clone https://github.com/Lakshmi-Bharati/Ajaia-Assessment.git
+cd Ajaia-Assessment
 npm install
 ```
 
