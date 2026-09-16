@@ -19,6 +19,7 @@ interface AttachmentPanelProps {
   onClose: () => void;
   canEdit: boolean;
   onAttachmentUploaded: (attachment: AttachmentItem) => void;
+  onAttachmentDeleted?: (attachmentId: string) => void;
 }
 
 export const AttachmentPanel: React.FC<AttachmentPanelProps> = ({
@@ -28,9 +29,12 @@ export const AttachmentPanel: React.FC<AttachmentPanelProps> = ({
   onClose,
   canEdit,
   onAttachmentUploaded,
+  onAttachmentDeleted,
 }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -38,8 +42,16 @@ export const AttachmentPanel: React.FC<AttachmentPanelProps> = ({
     if (!e.target.files || !e.target.files[0]) return;
     const file = e.target.files[0];
 
+    if (file.size > 4.5 * 1024 * 1024) {
+      setUploadError("File exceeds the 4.5MB attachment limit.");
+      setTimeout(() => setUploadError(null), 4000);
+      e.target.value = "";
+      return;
+    }
+
     setIsUploading(true);
     setUploadSuccess(false);
+    setUploadError(null);
 
     try {
       const formData = new FormData();
@@ -55,12 +67,37 @@ export const AttachmentPanel: React.FC<AttachmentPanelProps> = ({
         onAttachmentUploaded(data.attachment);
         setUploadSuccess(true);
         setTimeout(() => setUploadSuccess(false), 3000);
+      } else {
+        setUploadError(data.error || "Failed to upload file");
+        setTimeout(() => setUploadError(null), 4000);
       }
     } catch (err) {
       console.error("Failed to upload attachment", err);
+      setUploadError("Network error uploading attachment");
+      setTimeout(() => setUploadError(null), 4000);
     } finally {
       setIsUploading(false);
       e.target.value = "";
+    }
+  };
+
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    if (!confirm("Are you sure you want to remove this attachment?")) return;
+    setDeletingId(attachmentId);
+    try {
+      const res = await fetch(`/api/documents/${documentId}/attachments?attachmentId=${attachmentId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        onAttachmentDeleted?.(attachmentId);
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete attachment");
+      }
+    } catch (err) {
+      console.error("Failed to delete attachment", err);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -115,7 +152,7 @@ export const AttachmentPanel: React.FC<AttachmentPanelProps> = ({
                 {isUploading ? "Uploading..." : "Attach a reference file"}
               </span>
               <span style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-                PDF, images, spreadsheets, briefs
+                PDF, images, spreadsheets, briefs (max 4.5MB)
               </span>
             </label>
 
@@ -131,6 +168,21 @@ export const AttachmentPanel: React.FC<AttachmentPanelProps> = ({
                 }}
               >
                 <CheckCircle2 size={14} /> File attached successfully!
+              </div>
+            )}
+
+            {uploadError && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  color: "var(--danger)",
+                  fontSize: 12,
+                  marginTop: 8,
+                }}
+              >
+                <X size={14} /> {uploadError}
               </div>
             )}
           </div>
@@ -172,17 +224,30 @@ export const AttachmentPanel: React.FC<AttachmentPanelProps> = ({
                 </div>
               </div>
 
-              <a
-                href={att.filePath}
-                download={att.filename}
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-secondary"
-                style={{ padding: "6px 8px", marginLeft: 8 }}
-                title="Download file"
-              >
-                <Download size={14} />
-              </a>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8 }}>
+                <a
+                  href={att.filePath}
+                  download={att.filename}
+                  className="btn btn-secondary"
+                  style={{ padding: "6px 8px" }}
+                  title="Download file"
+                >
+                  <Download size={14} />
+                </a>
+
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteAttachment(att.id)}
+                    disabled={deletingId === att.id}
+                    className="btn btn-secondary"
+                    style={{ padding: "6px 8px", color: "var(--danger)" }}
+                    title="Remove attachment"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
             </div>
           ))}
 

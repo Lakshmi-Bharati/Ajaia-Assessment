@@ -391,6 +391,11 @@ export default function DocumentStudioPage({
               prev ? { ...prev, attachments: [newAtt, ...(prev.attachments || [])] } : prev
             );
           }}
+          onAttachmentDeleted={(deletedId) => {
+            setDocument((prev) =>
+              prev ? { ...prev, attachments: (prev.attachments || []).filter((a) => a.id !== deletedId) } : prev
+            );
+          }}
         />
 
         {/* AI Copilot Drawer */}
