@@ -1,0 +1,55 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String          @id @default(cuid())
+  name      String
+  email     String          @unique
+  avatar    String
+  roleTitle String          @default("Team Member")
+  documents Document[]      @relation("OwnedDocuments")
+  shares    DocumentShare[]
+  createdAt DateTime        @default(now())
+}
+
+model Document {
+  id          String          @id @default(cuid())
+  title       String          @default("Untitled Document")
+  contentJson String          @default("{}")
+  contentHtml String          @default("")
+  ownerId     String
+  owner       User            @relation("OwnedDocuments", fields: [ownerId], references: [id], onDelete: Cascade)
+  shares      DocumentShare[]
+  attachments Attachment[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model DocumentShare {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       String   @default("VIEWER") // "VIEWER" or "EDITOR"
+  createdAt  DateTime @default(now())
+
+  @@unique([documentId, userId])
+}
+
+model Attachment {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  filename   String
+  fileSize   Int
+  mimeType   String
+  filePath   String
+  createdAt  DateTime @default(now())
+}

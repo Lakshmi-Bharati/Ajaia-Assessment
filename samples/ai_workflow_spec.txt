@@ -1,0 +1,10 @@
+Project Phoenix: Technical Requirements Specification
+
+Overview:
+Lightweight document workspace designed to enhance cross-functional velocity with AI assistance.
+
+Specifications:
+- Fast rich-text editing with ProseMirror / Tiptap engine.
+- Multi-user sharing model with distinct Owner, Editor, and Viewer privileges.
+- Document file ingestion supporting Markdown, Plain Text, and Word files.
+- Persistent SQLite relational schema.
