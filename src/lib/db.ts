@@ -3,16 +3,18 @@ import fs from "fs";
 import path from "path";
 
 function setupDatabase(): string {
-  // If Vercel Postgres or an external database URL is configured
-  if (process.env.POSTGRES_PRISMA_URL) {
-    return process.env.POSTGRES_PRISMA_URL;
-  }
-  if (process.env.DATABASE_URL && !process.env.DATABASE_URL.startsWith("file:")) {
-    return process.env.DATABASE_URL;
+  // Check for PostgreSQL environment variables provided by Vercel / Prisma Postgres / Neon / Supabase
+  const cloudUrl =
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.PRISMA_DATABASE_URL;
+
+  if (cloudUrl && !cloudUrl.startsWith("file:")) {
+    return cloudUrl;
   }
 
-  // On Vercel / AWS Lambda, the root deployment directory is read-only.
-  // SQLite must operate in /tmp to acquire write locks.
+  // On Vercel / AWS Lambda without cloud DB:
   if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
     const tmpDbPath = path.join("/tmp", "dev.db");
     const sourceDbPath = path.join(process.cwd(), "prisma", "dev.db");

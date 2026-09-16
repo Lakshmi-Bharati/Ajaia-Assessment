@@ -4,18 +4,23 @@ const path = require("path");
 const schemaPath = path.join(__dirname, "..", "prisma", "schema.prisma");
 let schema = fs.readFileSync(schemaPath, "utf-8");
 
-const isPostgres =
+const postgresUrl =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
   process.env.POSTGRES_PRISMA_URL ||
-  (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres"));
+  process.env.PRISMA_DATABASE_URL;
+
+const isPostgres =
+  postgresUrl &&
+  (postgresUrl.startsWith("postgres") || postgresUrl.startsWith("prisma+postgres"));
 
 if (isPostgres) {
   console.log("Setting up Prisma for PostgreSQL (Vercel / Cloud)...");
   schema = schema.replace(
     /datasource db \{[\s\S]*?\}/,
     `datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }`
   );
 } else {
