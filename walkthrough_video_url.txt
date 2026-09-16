@@ -1,0 +1,5 @@
+Walkthrough Video URL:
+[PASTE YOUR LOOM / GOOGLE DRIVE / YOUTUBE VIDEO LINK HERE]
+
+Duration: ~3-5 minutes
+Description: Complete walkthrough covering document creation, rich text editing, file ingestion (.md), role-based sharing permissions (Owner vs Editor vs Viewer), multi-format export (Markdown & PDF), AI Copilot, architecture decisions, and AI-native workflow.
