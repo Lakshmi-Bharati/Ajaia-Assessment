@@ -80,7 +80,7 @@ export const TiptapEditor: React.FC<TiptapEditorProps> = ({
   }, [initialContent, editor]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", width: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, height: "100%", width: "100%", overflow: "hidden" }}>
       <EditorToolbar editor={editor} disabled={!canEdit} />
 
       <div className="editor-scroll-area">
