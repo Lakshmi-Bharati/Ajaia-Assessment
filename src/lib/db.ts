@@ -3,7 +3,10 @@ import fs from "fs";
 import path from "path";
 
 function setupDatabase(): string {
-  // If a remote database URL is explicitly configured (PostgreSQL, Supabase, etc.)
+  // If Vercel Postgres or an external database URL is configured
+  if (process.env.POSTGRES_PRISMA_URL) {
+    return process.env.POSTGRES_PRISMA_URL;
+  }
   if (process.env.DATABASE_URL && !process.env.DATABASE_URL.startsWith("file:")) {
     return process.env.DATABASE_URL;
   }
